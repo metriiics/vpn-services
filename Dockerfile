@@ -9,7 +9,8 @@ RUN apk add --no-cache build-base git linux-headers && \
     make -C /src/tools/src
 
 FROM alpine:3.24 AS base
-COPY --from=tools /src/tools/src/awg /usr/local/bin/
+COPY --from=tools /src/tools/src/wg /usr/local/bin/awg
+RUN awg --version
 COPY awg0.conf.example client.conf.example /usr/local/share/amneziawg/
 
 FROM base AS panel
