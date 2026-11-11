@@ -1,0 +1,22 @@
+[Interface]
+PrivateKey = SERVER_PRIVATE_KEY
+ListenPort = 1234
+
+HeaderProtectionKey = SHARED_HEADER_KEY
+S1 = 32
+S2 = 32
+S3 = 32
+S4 = 32
+H1 = 1
+H2 = 2
+H3 = 3
+H4 = 4
+RandomTrailers = on
+ContentPaddingAddition = 10-100
+RekeyAfterTime = 110-130
+RekeyTimeout = 4-7
+
+[Peer]
+PublicKey = CLIENT_PUBLIC_KEY
+PresharedKey = CLIENT_PRESHARED_KEY
+AllowedIPs = 10.77.38.2/32

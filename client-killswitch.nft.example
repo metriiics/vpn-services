@@ -1,0 +1,11 @@
+# Linux client with awg-quick. Replace VPS_PUBLIC_IPV4 before loading.
+table inet awg_killswitch {
+    chain output {
+        type filter hook output priority filter; policy drop;
+
+        oifname { "lo", "awg-client" } accept
+        meta mark 0xa739 ip daddr VPS_PUBLIC_IPV4 udp dport 1234 accept
+        ip daddr 255.255.255.255 udp sport 68 udp dport 67 accept
+        counter drop
+    }
+}

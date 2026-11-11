@@ -1,0 +1,6 @@
+*
+!awg0.conf.example
+!client.conf.example
+!docker/
+!docker/*.sh
+!docker/panel.py

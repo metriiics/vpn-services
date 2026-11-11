@@ -1,0 +1,48 @@
+services:
+  panel:
+    build:
+      context: .
+      target: panel
+    image: vpn-services-awg-panel:3.1
+    depends_on:
+      awg:
+        condition: service_healthy
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      AWG_VPN_PUBLIC_IPV4: "${AWG_VPN_PUBLIC_IPV4:?Set AWG_VPN_PUBLIC_IPV4 in .env}"
+    volumes:
+      - awg-control:/run/amneziawg:ro
+      - type: bind
+        source: ./state/profiles/server
+        target: /etc/amneziawg
+        bind:
+          create_host_path: false
+    networks: [panel-private]
+
+  panel-https:
+    image: caddy:2.11.9-alpine
+    restart: unless-stopped
+    depends_on: [panel]
+    environment:
+      AWG_PANEL_HOST: "${AWG_PANEL_DOMAIN:-${AWG_VPN_PUBLIC_IPV4:?Set AWG_VPN_PUBLIC_IPV4 in .env}}"
+      AWG_PANEL_ADMIN_IP: "${AWG_PANEL_ADMIN_IP:?Set AWG_PANEL_ADMIN_IP in .env}"
+      AWG_PANEL_PASSWORD_HASH: "${AWG_PANEL_PASSWORD_HASH:?Set AWG_PANEL_PASSWORD_HASH in .env}"
+    ports:
+      - "80:80/tcp"
+      - "443:443/tcp"
+    volumes:
+      - ./Caddyfile.panel:/etc/caddy/Caddyfile:ro
+      - panel-certs:/data
+      - panel-caddy-config:/config
+    networks: [default, panel-private]
+
+networks:
+  panel-private:
+    internal: true
+
+volumes:
+  panel-certs:
+  panel-caddy-config:

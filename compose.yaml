@@ -1,0 +1,50 @@
+x-amneziawg: &amneziawg-image
+  build: .
+  image: vpn-services-amneziawg:3.1
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+
+services:
+  awg:
+    <<: *amneziawg-image
+    init: true
+    restart: unless-stopped
+    cap_add: [NET_ADMIN]
+    devices: ["/dev/net/tun:/dev/net/tun"]
+    sysctls:
+      net.ipv4.ip_forward: "1"
+    ports:
+      - "0.0.0.0:1234:1234/udp"
+    volumes:
+      - awg-control:/run/amneziawg
+      - type: bind
+        source: ./state/profiles/server
+        target: /etc/amneziawg
+        read_only: true
+        bind:
+          create_host_path: false
+    healthcheck:
+      test: [CMD-SHELL, 'awg show awg0 listen-port | grep -qx 1234 && ip -4 addr show dev awg0 | grep -Fq 10.77.38.1/24']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+
+  init-profiles:
+    <<: *amneziawg-image
+    profiles: [setup]
+    network_mode: none
+    entrypoint: ["/bin/sh", "/usr/local/bin/init-profiles.sh"]
+    volumes:
+      - type: bind
+        source: ./state
+        target: /state
+        bind:
+          create_host_path: false
+
+networks:
+  default:
+    enable_ipv6: false
+
+volumes:
+  awg-control:

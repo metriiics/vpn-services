@@ -1,0 +1,25 @@
+{
+    default_sni {$AWG_PANEL_HOST}
+}
+
+https://{$AWG_PANEL_HOST} {
+    tls {
+        issuer acme {
+            profile shortlived
+            disable_tlsalpn_challenge
+        }
+    }
+
+    @admin remote_ip {$AWG_PANEL_ADMIN_IP}
+    handle @admin {
+        basic_auth {
+            admin {$AWG_PANEL_PASSWORD_HASH}
+        }
+        reverse_proxy panel:8080 {
+            header_up -Authorization
+        }
+    }
+    handle {
+        respond 403
+    }
+}
