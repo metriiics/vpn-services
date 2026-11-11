@@ -2,7 +2,8 @@
 set -eu
 
 nft -f - <<'NFT'
-destroy table inet amneziawg
+add table inet amneziawg
+delete table inet amneziawg
 table inet amneziawg {
     set restricted_ipv4 {
         type ipv4_addr; flags interval;

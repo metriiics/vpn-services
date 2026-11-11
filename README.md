@@ -45,13 +45,16 @@ AWG_PANEL_PASSWORD_HASH='ВСТАВЬТЕ_ПОЛНЫЙ_ХЭШ'
 
 ## 4. Запустите VPN и панель
 
-В `init-profiles` подставьте тот же IPv4 VPS, который указали в `.env`.
+Первый запуск создаёт профили с IPv4 из `.env`. При повторном запуске используются сохранённые профили.
 
 ```sh
 docker compose -f compose.yaml -f compose.panel.yaml run --rm --no-deps panel-https \
   caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile &&
 docker compose -f compose.yaml -f compose.panel.yaml build --pull awg panel &&
-docker compose run --rm --no-deps init-profiles 203.0.113.10 &&
+if [ ! -s state/profiles/server/awg0.conf ]; then
+  vps_ip=$(sed -n 's/^AWG_VPN_PUBLIC_IPV4=//p' .env)
+  docker compose -f compose.yaml -f compose.panel.yaml run --rm --no-deps init-profiles "$vps_ip"
+fi &&
 docker compose -f compose.yaml -f compose.panel.yaml up -d --no-build --wait
 ```
 
